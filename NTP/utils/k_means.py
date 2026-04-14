@@ -91,9 +91,8 @@ class KM():
     
     def k_means_silscore(self, k):
         """
-        对给定的k值，计算每个word在该k下的轮廓分数，并更新最优值
-        word_embeddings: dict, key为word, value为嵌入数组 (去重后)
-        k: int, 当前聚类数
+        For a given value of k, calculate the profile score for each word for that k and update the optimal value
+        k: int, number of clusters
         """
 
         #output_file = self.args.silscore_path + "/k_" + str(k) + ".txt"
@@ -108,7 +107,6 @@ class KM():
             if k == 2:
                 self.max_silscores[main_word] = -1
                 self.max_silscores_k[main_word] = -1
-                # self.all_embeddings.extend(cp.asnumpy(unique_embedding_data))
                 self.all_embeddings.extend(unique_embedding_data)
                 self.back_labels_roma.extend([romkan.to_roma(main_word).replace('、', ',').replace('。', '.')] * len(unique_embedding_data))
 

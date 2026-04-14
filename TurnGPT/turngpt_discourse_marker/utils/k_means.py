@@ -62,10 +62,9 @@ class KM():
             ]
         return main_words_dic, main_words
     
+    
     def tsne_visualization(self):
-        
-        # self.all_embeddings = np.vstack(self.all_embeddings)
-        # self.back_labels_roma = np.array(self.back_labels_roma)
+
         self.all_embeddings = np.asarray(np.vstack(self.all_embeddings), dtype=np.float32)
         self.back_labels_roma = np.array(self.back_labels_roma)
 
@@ -77,7 +76,6 @@ class KM():
         colors = plt.cm.get_cmap('tab20', len(unique_labels))
         color_dict = {label: colors(i) for i, label in enumerate(unique_labels)}
 
-        # 可视化聚类结果
         plt.figure(figsize=(10, 8))
         for label in unique_labels:
             idx = [i for i, lbl in enumerate(self.back_labels_roma) if lbl == label]
@@ -90,22 +88,17 @@ class KM():
         plt.savefig(self.args.tsne_path)
         plt.show()
     
+
     def k_means_silscore(self, k):
+        """
+        For a given value of k, calculate the profile score for each word for that k and update the optimal value
+        k: int, number of clusters
+        """
 
         # output_file = self.args.silscore_path + "/k_" + str(k) + ".txt"
 
         sil_scores = [self.args.test_type + "_ctx"]
         for main_word in self.main_words:
-            # if self.args.language == 'Japanese':
-            #     embedding_data = [embedding.cpu().numpy() for word, embedding in embedding_datas if self.main_words_dic[word] == main_word]
-            # elif self.args.language == 'English':
-            #     embedding_data = [embedding.cpu().numpy() for word, embedding in embedding_datas if word == main_word]
-            # embedding_data = np.array(embedding_data) 
-            # unique_embedding_data, _ = np.unique(embedding_data, axis=0, return_index=True)
-            
-            # self.all_embeddings.extend(unique_embedding_data)
-            # self.back_labels_roma.extend([romkan.to_roma(main_word).replace('、', ',').replace('。', '.')] * len(unique_embedding_data))
-
             unique_embedding_data = self.word_to_embeddings.get(main_word)
             if len(unique_embedding_data) < 2:
                 continue 
@@ -113,7 +106,6 @@ class KM():
             if k == 2:
                 self.max_silscores[main_word] = -1
                 self.max_silscores_k[main_word] = -1
-                # self.all_embeddings.extend(cp.asnumpy(unique_embedding_data))
                 self.all_embeddings.extend(unique_embedding_data)
                 self.back_labels_roma.extend([romkan.to_roma(main_word).replace('、', ',').replace('。', '.')] * len(unique_embedding_data))
 
@@ -133,11 +125,11 @@ class KM():
         # with open(output_file, "a", encoding="utf-8") as f:
         #     f.write("\n".join(sil_scores) + "\n\n")
         
-    
+
     def k_means(self, layer, data_path):
 
         embedding_datas = torch.load(data_path, weights_only=False)
-        # cp.random.seed(42)
+
         np.random.seed(42)
 
         cpu_embeddings = {}
@@ -149,18 +141,11 @@ class KM():
             if main_word not in self.word_to_embeddings:
                 self.word_to_embeddings[main_word] = []
             cpu_embeddings.setdefault(main_word, []).append(emb.cpu().numpy())
-            # self.word_to_embeddings[main_word].append(cp.asarray(emb.cpu().numpy()))
-        
+  
         for word, emb_list in cpu_embeddings.items():
             arr = np.array(emb_list)
             unique_arr, _ = np.unique(arr, axis=0, return_index=True)
             self.word_to_embeddings[word] = unique_arr
-            # self.word_to_embeddings[word] = cp.asarray(unique_arr)
-        
-        # for word in self.word_to_embeddings:
-        #     print(f"Processing word: {word} with {len(self.word_to_embeddings[word])} embeddings")
-        #     self.word_to_embeddings[word] = cp.stack(self.word_to_embeddings[word])
-        #     self.word_to_embeddings[word], _ = cp.unique(self.word_to_embeddings[word], axis=0, return_index=True)
 
         print(f"Finished loading and deduplicating embeddings for layer {layer}. Starting k-means clustering and silhouette score calculation...")
         for k in tqdm(range(2,16)):
@@ -174,33 +159,18 @@ class KM():
             for word, silscore in self.max_silscores.items():
                 writer.writerow([word, silscore, self.max_silscores_k[word]])
         
+
     def bootstrap_average_silscore(self, n_bootstrap=1000, random_state=42):
         """
-        联合Bootstrap：每次迭代对所有小词分别抽样，计算平均轮廓分数。
-        返回：
-            avg_scores: list of float，每次迭代的平均轮廓分数
-            word_scores: dict，每个小词在所有迭代中的轮廓分数列表（可选）
+        Bootstrap: each iteration samples all words separately and computes the average profile score.
+        Return:
+            avg_scores: list of float, Average profile score per iteration
+            word_scores: dict, List of contour scores for each small word across all iterations
         """
-
-        # embedding_datas = torch.load(data_path, weights_only=False)
-        
-        # for word, emb in embedding_datas:
-        #     if self.args.language == 'Japanese':
-        #         main_word = self.main_words_dic[word]
-        #     else:
-        #         main_word = word
-        #     if main_word not in self.word_to_embeddings:
-        #         self.word_to_embeddings[main_word] = []
-        #     self.word_to_embeddings[main_word].append(cp.asarray(emb.cpu().numpy()))
-
-        # for word in self.word_to_embeddings:
-        #     self.word_to_embeddings[word] = cp.stack(self.word_to_embeddings[word])
-        #     self.word_to_embeddings[word], _ = cp.unique(self.word_to_embeddings[word], axis=0, return_index=True)
 
         avg_scores = []
         word_scores = {word: [] for word in self.main_words}
-        cp.random.seed(random_state)  # 设置GPU随机种子
-        # np.random.seed(random_state)
+        cp.random.seed(random_state) 
 
         gpu_embeddings = {}
         for main_word in self.main_words:
@@ -210,22 +180,13 @@ class KM():
 
         for _ in tqdm(range(n_bootstrap)):
             iter_word_scores = []
-            # for main_word in self.main_words:
             for main_word, gpu_emb in gpu_embeddings.items():
                 n_samples = len(gpu_emb)
-                # unique_embedding_data = self.word_to_embeddings.get(main_word)
-                # if len(unique_embedding_data) < 2:
-                #     continue  
-                # n_samples = len(unique_embedding_data)
 
                 boot_indices = cp.random.choice(n_samples, n_samples, replace=True)
                 boot_embeddings = gpu_emb[boot_indices]
-                # boot_embeddings = unique_embedding_data[boot_indices]
-
-                # boot_indices = np.random.choice(n_samples, n_samples, replace=True)
-                # boot_embeddings = unique_embedding_data[boot_indices]
-                
-                # 寻找最佳k
+               
+                # Finding the best k
                 best_sil = -1
                 for k in range(2,16):
                     kmeans = cu_KMeans(n_clusters=k, random_state=random_state)
@@ -245,15 +206,6 @@ class KM():
         
         self.bootstrap_avg_scores = avg_scores
         self.bootstrap_word_scores = word_scores
-        
-        # np.savez(
-        #     self.args.bootstrap_scores,
-        #     bootstrap_avg_scores=np.array(self.bootstrap_avg_scores, dtype=float),
-        #     bootstrap_word_scores=np.array(
-        #         [{k: v for k, v in self.bootstrap_word_scores.items()}],
-        #         dtype=object
-        #     ),
-        # )
 
         merged = {}
         try:
@@ -279,8 +231,6 @@ class KM():
             if word in self.main_words:
                 mat = checkpoint[word].mean(dim=0)
                 compare_dict[word] = mat
-                # for j in enumerate(mat):
-                #     compare_dict[word] = j[1]
 
         ds = list(compare_dict.keys())
         n = len(ds)
@@ -311,10 +261,3 @@ class KM():
             plt.close()
 
         plot_heatmap(euclidean_matrix, "Distance Confusion Matrix (Euclidean)", self.args.distance_path)
-
-        # plt.figure(figsize=(12, 10))
-        # sns.heatmap(df_cm, annot=False, cmap="Blues", fmt=".4f", linewidths=0.5)
-        # plt.xlabel("discorse markers")
-        # plt.ylabel("discorse markers")
-        # plt.title("Distance Confusion Matrix")
-        # plt.savefig(self.args.distance_path, dpi=300, bbox_inches='tight')

@@ -21,7 +21,6 @@ class LM():
 
     def load_tokenizer_and_model(self):
         model = TurnGPT.load_from_checkpoint(self.args.pretrainModel_dir)
-        # 将模型设置为评估模式
         model.eval()
         tokenizer = model.tokenizer
         return model, tokenizer
@@ -68,11 +67,10 @@ class LM():
         downsampled_data = data[indices] 
         
         if self.args.pca:
-            # 使用 StandardScaler 对输入数据进行标准化
             scaler = StandardScaler()
             normalized_embeddings = scaler.fit_transform(downsampled_data)
             pca = PCA(n_components=self.args.pca_dim) 
-            downsampled_data = pca.fit_transform(normalized_embeddings) # 使用 PCA 对标准化后的向量进行降维
+            downsampled_data = pca.fit_transform(normalized_embeddings)
 
         print(downsampled_data.shape)
         data_list = [(back_labels[i], torch.tensor(downsampled_data[i])) for i in range(len(downsampled_labels))]
@@ -94,15 +92,13 @@ class LM():
                 torch.cuda.empty_cache()
 
             for target_bck, target_span in interjection_spans:
-                target_bck = re.search(r'<ds>(.*?)</ds>', target_bck).group(1) # 获取<ds>和</ds>之间的文本
+                target_bck = re.search(r'<ds>(.*?)</ds>', target_bck).group(1)
                 overlap = False
                 for _, other_span in interjection_spans:
                     if (target_span[0] >= other_span[0] and target_span[1] < other_span[1]) or (target_span[0] > other_span[0] and target_span[1] <= other_span[1]):
                         overlap = True
                         break
                 if not overlap:
-                    #embedding = hidden_states[::-1][0][:,target_span[0]:target_span[1]+1,:]
-                    #filtered_data_list.append((target_bck, embedding[0].mean(dim=0, keepdim=False)))
                     for mid_layer in self.args.layers:
                         mid_embedding = hidden_states[mid_layer][:, target_span[0]:target_span[1]+1, :]
                         filtered_data_list[mid_layer].append((target_bck, mid_embedding[0].mean(dim=0, keepdim=False)))
@@ -110,9 +106,6 @@ class LM():
             del hidden_states
             if torch.cuda.is_available():
                 torch.cuda.empty_cache()
-
-        #data_list = self.batch_embedding_pca(data_list=filtered_data_list)
-        #torch.save(data_list, self.args.embedding_path)
 
         for mid_layer in self.args.layers:
             data_list = self.batch_embedding_pca(data_list=filtered_data_list[mid_layer])
