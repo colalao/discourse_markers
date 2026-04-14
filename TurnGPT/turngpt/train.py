@@ -35,8 +35,8 @@ def default_logger_callbacks(name, args, callbacks):
     # logger.watch(model)
 
     logger = TensorBoardLogger(
-        save_dir=SAVE_DIR,        # 日志保存路径
-        name = name + args.name_info,    # 当前实验的名称
+        save_dir=SAVE_DIR,       
+        name = name + args.name_info,   
     )
 
     #id_hash = logger.experiment.path.split("/")[-1]

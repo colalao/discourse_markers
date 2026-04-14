@@ -19,15 +19,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-# exist_backchannel=[
-#         'uhhuh','okay', 'no', 'well', 'right', 'yeah','alright', 'mmhmm', 'ehm', 'oh', 
-#         'yes', 'mm','ha','ah','nope','aye', 'eh', 'nah', 'erm', "'kay", 'yep', 'yay',
-#         'uh', 'a', 'okeydokey', 'mmmm', 'hmm', 'uhuh', 'phoar', 'yeeha', 
-#         'r', 'righteeho', 'surely', 'aha', 'pardon', 'un', 'exactly', 'yup', 'wow', 
-#         'm','y','um','oo','so']
-# interjection_en = list(set(ACK_BACK['en'] + AGREE_ACCEPT['en'] + ANSWERS['en'] + NEGATIVE_FEEDBACK['en'] + exist_backchannel))
-
-
 TS_TOKENS = {
     "eos_token": "<ts>",
     "pad_token": "<|endoftext|>",
