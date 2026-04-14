@@ -9,6 +9,11 @@ python train.py --language Japanese --pretrainModel gpt2
 - NO_PCA
     - python test.py --language Japanese --pretrainModel gpt2 --test_type no_ft_no
 
+### inference
+- metric evaluation
+    - python infer.py --language English --pretrainModel llama3 --test_type ft_one --infer_ratio 10
+    - python infer.py --language English --pretrainModel llama3 --test_type no_ft_one --infer_ratio 10
+
 ### pretrainModel
 - Llama3:
     - lightblue/suzume-llama-3-8B-multilingual
