@@ -22,6 +22,7 @@ parser.add_argument("--max_silscore_file", type=str, default=None)
 parser.add_argument("--centroids_path", type=str, default=None)
 parser.add_argument("--tsne_path", type=str, default=None)
 parser.add_argument("--distance_path", type=str, default=None)
+parser.add_argument("--infer_ratio", type=int, default=1)
 
 args = parser.parse_args()
 

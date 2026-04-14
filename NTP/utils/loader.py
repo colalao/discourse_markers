@@ -23,6 +23,8 @@ class DatasetManager(object):
             token = self.tokenizer(bck, return_tensors="pt", truncation=True)
             if self.args.pretrainModel == "bert":
                 self.interjection_token_list.append((bck, token.input_ids[0][1:-1]))
+            elif self.args.pretrainModel == "llama3":
+                self.interjection_token_list.append((bck, token.input_ids[0][1:]))
             else: 
                 self.interjection_token_list.append((bck, token.input_ids[0]))
             print(self.interjection_token_list[-1])
@@ -131,6 +133,66 @@ class DatasetManager(object):
     
     def tokenize_function(self, examples):
         return self.tokenizer(examples['text'], padding='max_length', truncation=True, max_length=128)
+
+    def _speaker_tag(self, speaker, target_speaker):
+        if speaker == target_speaker:
+            return '/A'
+        if speaker == '話者不明':
+            return '/C'
+        return '/B'
+
+    def _format_turn(self, speaker, dialogue, target_speaker):
+        tag = self._speaker_tag(speaker, target_speaker)
+        return f"{tag} {dialogue} {tag}"
+
+    def _build_infer_examples(self, num_prev_turns):
+        contexts = []
+        groundtruths = []
+
+        for original_index in self.interjection_df.index:
+            target_speaker = self.original_df.at[original_index, 'Speaker']
+            target_file_id = self.original_df.at[original_index, 'File_ID']
+
+            start_index = original_index
+            collected = 0
+            while start_index > 0 and collected < num_prev_turns:
+                prev_index = start_index - 1
+                if self.original_df.at[prev_index, 'File_ID'] != target_file_id:
+                    break
+                start_index = prev_index
+                collected += 1
+
+            context_turns = []
+            for idx in range(start_index, original_index):
+                context_turns.append(
+                    self._format_turn(
+                        self.original_df.at[idx, 'Speaker'],
+                        self.original_df.at[idx, 'Dialogue'],
+                        target_speaker,
+                    )
+                )
+
+            if not context_turns:
+                continue
+
+            target_turn = self._format_turn(
+                self.original_df.at[original_index, 'Speaker'],
+                self.original_df.at[original_index, 'Dialogue'],
+                target_speaker,
+            )
+            contexts.append(" ".join(context_turns))
+            groundtruths.append(target_turn)
+
+        return (
+            pd.DataFrame({'Dialogue': contexts}),
+            pd.DataFrame({'Dialogue': groundtruths}),
+        )
+
+    def concat_one_context_infer(self):
+        return self._build_infer_examples(num_prev_turns=1)
+
+    def concat_n_context_infer(self, num_prev_turns):
+        return self._build_infer_examples(num_prev_turns=num_prev_turns)
     
     def build_trainData(self):
         one_context_df = self.concat_one_context()
@@ -140,9 +202,3 @@ class DatasetManager(object):
         dataset = Dataset.from_dict({"text": texts})
         tokenized_dataset = dataset.map(self.tokenize_function, batched=True) # {'text':' ', 'input_ids':[ ], 'attention_mask':[ ]}
         return tokenized_dataset
-
-
-
-
-        
-        
