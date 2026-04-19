@@ -7,7 +7,7 @@ os.environ["HF_HOME"] = "/data1/huggingface"
 import torch
 from utils.train_config import *
 from utils.loader import DatasetManager
-from transformers import AutoTokenizer, AutoModelForCausalLM
+from transformers import AutoTokenizer, AutoModelForCausalLM, AutoModelForMaskedLM
 from transformers import DataCollatorForLanguageModeling, Trainer
 from peft import get_peft_model
 
@@ -15,9 +15,9 @@ class FocalDataCollatorForLanguageModeling(DataCollatorForLanguageModeling):
     def __init__(self, tokenizer, interjection_tokens_list, mlm_probability=1.0):
         super().__init__(tokenizer, mlm=True, mlm_probability=mlm_probability)
         self.tokenizer = tokenizer
-        self.interjection_tokens_list = interjection_tokens_list  # 小词的 token ids
+        self.interjection_tokens_list = interjection_tokens_list 
 
-    def torch_mask_tokens(self, inputs, special_tokens_mask=None):
+    def torch_mask_tokens(self, inputs, special_tokens_mask=None, **kwargs):
         """
         inputs: (batch_size, seq_length)
         special_tokens_mask: List[List[int]]
@@ -71,7 +71,10 @@ def LM():
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
     tokenizer = AutoTokenizer.from_pretrained(args.pretrainModel_dir)
-    model = AutoModelForCausalLM.from_pretrained(args.pretrainModel_dir)
+    if args.pretrainModel == "bert":
+        model = AutoModelForMaskedLM.from_pretrained(args.pretrainModel_dir)
+    else:
+        model = AutoModelForCausalLM.from_pretrained(args.pretrainModel_dir)
 
     if args.language == "Japanese":
         new_tokens = [word for word in args.interjection if len(tokenizer.tokenize(word)) > 1]

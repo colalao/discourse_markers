@@ -81,6 +81,7 @@ if args.pretrainModel == "llama3" or args.pretrainModel == "qwen3":
         bias="none", # add bias to the nn.Linear layers?
         task_type="CAUSAL_LM",
         target_modules=["q_proj", "v_proj"], # the name of the layers to add LoRA
+        modules_to_save=["embed_tokens", "lm_head"], # optional,
     )
 else:
     args.pretrainModel_dir = model_paths[args.pretrainModel][args.language]

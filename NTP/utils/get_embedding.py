@@ -1,4 +1,4 @@
-from transformers import AutoTokenizer, AutoModelForCausalLM
+from transformers import AutoTokenizer, AutoModel
 from peft import PeftModel
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
@@ -21,7 +21,7 @@ class LM():
         self.model.to(self.device)
 
     def load_llama3_qwen3(self):
-        model = AutoModelForCausalLM.from_pretrained(self.args.pretrainModel_dir)
+        model = AutoModel.from_pretrained(self.args.pretrainModel_dir)
         if self.args.test_type == "no_ft_no" or self.args.test_type == "no_ft_one" or self.args.test_type == "no_ft_full":
             tokenizer = AutoTokenizer.from_pretrained(self.args.pretrainModel_dir)
             if self.args.pretrainModel == "qwen3":
@@ -38,7 +38,7 @@ class LM():
     
     def load_gpt2_bert(self):
         tokenizer = AutoTokenizer.from_pretrained(self.args.pretrainModel_dir)
-        model = AutoModelForCausalLM.from_pretrained(self.args.pretrainModel_dir)
+        model = AutoModel.from_pretrained(self.args.pretrainModel_dir)
         if self.args.test_type == "no_ft_no" or self.args.test_type == "no_ft_one":
             tokenizer.add_special_tokens(self.special_tokens)
             if self.args.language == "English" and self.args.pretrainModel == "gpt2":
