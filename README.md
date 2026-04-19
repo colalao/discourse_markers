@@ -2,12 +2,16 @@
 
 ## Overview
 
-The project is structured to explore the representation spaces of discourse markers using distinct language modeling paradigms:
+The project is structured to explore the representation spaces of backchannels/fillers (discourse markers) using distinct language modeling paradigms:
 - **NTP_and_MASK Models**: Evaluating generic causal and masked language models (BERT, GPT-2, LLaMA-3, Qwen-3) using Next Token Prediction and Masked Language Modeling.
-- **TurnGPT**: Evaluating fine-tuned models specifically designed for turn-taking projection (GPT-2).
+- **TurnGPT**: Evaluating fine-tuned models specifically designed for turn-taking projection (GPT-2 based LM).
 
-The analytical pipeline includes extracting model embeddings across English and Japanese, clustering them via K-Means, evaluating clustering quality with Silhouette Scores, and exploring high-dimensional representations with t-SNE and distance matrices.
+The analytical pipeline includes extracting model embeddings across English and Japanese, clustering them via K-Means, evaluating clustering quality with Silhouette Scores, and exploring high-dimensional representations with t-SNE and distance matrices. Further analysis includes NLG evaluation using metrics such as BERTScore, Perplexity etc.
 
+## Dialogue Datasets (open-sourced dataset)
+- **English Dialogue**: Switchboard, Map Task
+- **Japanese Dialogue**: BTSJ
+  
 ## Directory Structure
 
 ```text
