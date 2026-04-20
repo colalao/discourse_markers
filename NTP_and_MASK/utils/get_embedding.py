@@ -141,7 +141,7 @@ class LM():
                 torch.cuda.empty_cache()
 
             for target_bck, target_span in interjection_spans:
-                target_bck = re.search(r'<ds>(.*?)</ds>', target_bck).group(1) # 获取<ds>和</ds>之间的文本
+                target_bck = re.search(r'<ds>(.*?)</ds>', target_bck).group(1) # get the text between <ds> and </ds>
                 overlap = False
                 for _, other_span in interjection_spans:
                     if (target_span[0] >= other_span[0] and target_span[1] < other_span[1]) or (target_span[0] > other_span[0] and target_span[1] <= other_span[1]):
