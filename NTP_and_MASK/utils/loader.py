@@ -106,11 +106,11 @@ class DatasetManager(object):
                     speaker3 = '/A'
                 current_dialogue = current_dialogue + speaker3 + ' ' + self.original_df.at[original_index + 1, 'Dialogue'] + ' ' + speaker3 
             modified_dialogues.append(current_dialogue)
-        one_context_df = pd.DataFrame({'Dialogue': modified_dialogues}) # （前一句+小词+后一句）
+        one_context_df = pd.DataFrame({'Dialogue': modified_dialogues}) # （previous utterance + backchannel/filler + next utterance）
         return one_context_df
     
     def concat_full_context(self):
-        
+        # The case of '話者不明' in the BSTJ corpus is not so prevelant.
         speakers_dict = self.original_df.groupby('File_ID')['Speaker'].unique().to_dict()
         
         file_id = self.original_df.at[0, 'File_ID']
